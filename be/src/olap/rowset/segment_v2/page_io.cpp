@@ -21,8 +21,10 @@
 #include <string>
 
 #include "common/logging.h"
+#include "service/cache_warmup_service.h"
 #include "env/env.h"
 #include "gutil/strings/substitute.h"
+#include "olap/fs/fs_util.h"
 #include "olap/fs/block_manager.h"
 #include "olap/page_cache.h"
 #include "util/block_compression.h"
@@ -116,8 +118,12 @@ Status PageIO::read_and_decompress_page(const PageReadOptions& opts, PageHandle*
 
     auto cache = StoragePageCache::instance();
     PageCacheHandle cache_handle;
-    StoragePageCache::CacheKey cache_key(opts.rblock->path(), opts.page_pointer.offset);
-    if (opts.use_page_cache && cache->is_cache_available(opts.type) && cache->lookup(cache_key, &cache_handle, opts.type)) {
+    CompressionTypePB compression_type = CompressionTypePB::NO_COMPRESSION;
+    if (opts.codec) {
+        compression_type = opts.codec->type();
+    }
+    StoragePageCache::CacheKey cache_key(opts.rblock->path(), opts.page_pointer.offset, opts.page_pointer.size, compression_type);
+    if (opts.use_page_cache && cache->lookup(cache_key, &cache_handle)) {
         // we find page in cache, use it
         *handle = PageHandle(std::move(cache_handle));
         opts.stats->cached_pages_num++;
@@ -203,6 +209,87 @@ Status PageIO::read_and_decompress_page(const PageReadOptions& opts, PageHandle*
     }
     page.release(); // memory now managed by handle
     return Status::OK();
+}
+
+// just for warmup cache
+void PageIO::warmup_page_cache(const StoragePageCache::CacheKey& cache_key) {
+    PageCacheHandle cache_handle;
+
+    // every page contains 4 bytes footer length and 4 bytes checksum
+    const uint32_t page_size = cache_key.size;
+    if (page_size < 8) {
+        return;
+    }
+
+    std::unique_ptr<fs::ReadableBlock> rblock;
+    fs::BlockManager* block_mgr = fs::fs_util::block_manager();
+    Status status = block_mgr->open_block(cache_key.fname, &rblock);
+    if (!status.ok()) {
+        return;
+    }
+    // hold compressed page at first, reset to decompressed page later
+    std::unique_ptr<char[]> page(new char[page_size]);
+    Slice page_slice(page.get(), page_size);
+    {
+        Status status = rblock->read(cache_key.offset, page_slice);
+        if (!status.ok()) {
+            return;
+        }
+
+    }
+
+    if (cache_key.verify_checksum) {
+        uint32_t expect = decode_fixed32_le((uint8_t*) page_slice.data + page_slice.size - 4);
+        uint32_t actual = crc32c::Value(page_slice.data, page_slice.size - 4);
+        if (expect != actual) {
+            return;
+        }
+    }
+
+    // remove checksum suffix
+    page_slice.size -= 4;
+    // parse and set footer
+    PageFooterPB footer;
+    uint32_t footer_size = decode_fixed32_le((uint8_t*) page_slice.data + page_slice.size - 4);
+    if (!footer.ParseFromArray(page_slice.data + page_slice.size - 4 - footer_size, footer_size)) {
+        return;
+    }
+
+    const BlockCompressionCodec* codec = nullptr;
+    get_block_compression_codec(cache_key.compression_type, &codec);
+
+    uint32_t body_size = page_slice.size - 4 - footer_size;
+    if (body_size != footer.uncompressed_size()) { // need decompress body
+        if (codec == nullptr) {
+            return;
+        }
+
+        std::unique_ptr<char[]> decompressed_page(
+                new char[footer.uncompressed_size() + footer_size + 4]);
+
+        // decompress page body
+        Slice compressed_body(page_slice.data, body_size);
+        Slice decompressed_body(decompressed_page.get(), footer.uncompressed_size());
+        Status status = codec->decompress(compressed_body, &decompressed_body);
+        if (!status.ok()) {
+            return;
+        }
+        if (decompressed_body.size != footer.uncompressed_size()) {
+            return;
+        }
+        // append footer and footer size
+        memcpy(decompressed_body.data + decompressed_body.size,
+               page_slice.data + body_size,
+               footer_size + 4);
+        // free memory of compressed page
+        page = std::move(decompressed_page);
+        page_slice = Slice(page.get(), footer.uncompressed_size() + footer_size + 4);
+    }
+
+    // insert this page into cache and return the cache handle
+    StoragePageCache::instance()->insert(cache_key, page_slice, &cache_handle, false);
+    page.release();
+    LRUCacheWarmupService::success++;
 }
 
 } // namespace segment_v2

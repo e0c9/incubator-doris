@@ -50,6 +50,7 @@
 #include "service/backend_service.h"
 #include "service/brpc_service.h"
 #include "service/http_service.h"
+#include "service/cache_warmup_service.h"
 #include "util/debug_util.h"
 #include "util/doris_metrics.h"
 #include "util/file_utils.h"
@@ -174,7 +175,15 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
-    // initialize libcurl here to avoid concurrent initialization
+    // check cache dump path
+    auto cache_dump_path = doris::config::page_cache_dump_path;
+    boost::filesystem::create_directories(boost::filesystem::path(cache_dump_path));
+    if (!doris::check_datapath_rw(cache_dump_path)) {
+        LOG(FATAL) << "read write test file in cache dump path failed, path=" << cache_dump_path;
+        exit(-1);
+    }
+
+    // initilize libcurl here to avoid concurrent initialization
     auto curl_ret = curl_global_init(CURL_GLOBAL_ALL);
     if (curl_ret != 0) {
         LOG(FATAL) << "fail to initialize libcurl, curl_ret=" << curl_ret;
@@ -208,6 +217,11 @@ int main(int argc, char** argv) {
     doris::ExecEnv::init(exec_env, paths);
     exec_env->set_storage_engine(engine);
     engine->set_heartbeat_flags(exec_env->heartbeat_flags());
+
+    // begin to load cache
+    if (doris::config::enable_warmup) {
+        doris::LRUCacheWarmupService::load_cache_from_disk();
+    }
 
     // start all backgroud threads of storage engine.
     // SHOULD be called after exec env is initialized.
@@ -280,13 +294,18 @@ int main(int argc, char** argv) {
     be_server->join();
     engine->stop();
 
-    delete be_server;
+    // start dump chache
+    if (doris::config::enable_warmup) {
+        doris::LRUCacheWarmupService::dump_cache_to_disk();
+    }
+
     be_server = nullptr;
     delete engine;
     engine = nullptr;
     delete heartbeat_thrift_server;
     heartbeat_thrift_server = nullptr;
     doris::ExecEnv::destroy(exec_env);
+    delete be_server;
     return 0;
 }
 

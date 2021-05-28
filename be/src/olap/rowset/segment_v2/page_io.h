@@ -108,6 +108,10 @@ public:
     //     `footer' stores the page footer.
     static Status read_and_decompress_page(const PageReadOptions& opts, PageHandle* handle,
                                            Slice* body, PageFooterPB* footer);
+
+    // Just for warmup cache
+    // Read and parse a page according to `opts` 
+    static void warmup_page_cache(const StoragePageCache::CacheKey& cache_key);
 };
 
 } // namespace segment_v2

@@ -17,15 +17,19 @@
 
 #pragma once
 
+#include <string>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <utility>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include "gutil/macros.h" // for DISALLOW_COPY_AND_ASSIGN
 #include "olap/lru_cache.h"
 #include "gen_cpp/segment_v2.pb.h" // for cache allocation
 #include "runtime/mem_tracker.h"
-
+#include "common/stl_serialization.h"
 
 namespace doris {
 
@@ -43,15 +47,55 @@ public:
     // TODO(zc): Now we use file name(std::string) as a part of
     // key, which is not efficient. We should make it better later
     struct CacheKey {
-        CacheKey(std::string fname_, int64_t offset_) : fname(std::move(fname_)), offset(offset_) {}
+
+        CacheKey(){}
+
+        CacheKey(std::string fname_, int64_t offset_, uint32_t size_, segment_v2::CompressionTypePB compression_type_ = segment_v2::CompressionTypePB::NO_COMPRESSION) 
+            : fname(std::move(fname_)), offset(offset_), size(size_), compression_type(compression_type_) { }
+        
+        CacheKey(const std::string& encode_string) {
+            std::istringstream is(encode_string);
+            int icompression_type = 2;;
+            int fname_size = 0;
+            is >> offset;
+            is >> size;
+            is >> verify_checksum;
+            is >> icompression_type;
+            is >> fname_size;
+            fname = encode_string.substr(encode_string.length() - fname_size);
+            if (segment_v2::CompressionTypePB_IsValid(icompression_type)) {
+                compression_type = static_cast<segment_v2::CompressionTypePB>(icompression_type);
+            }
+
+        }
+
         std::string fname;
         int64_t offset;
+        uint32_t size;
+        bool verify_checksum = true;
+        segment_v2::CompressionTypePB compression_type;
 
         // Encode to a flat binary which can be used as LRUCache's key
+        // format offset + " " + size + " " + compression_type + " " + fname_size + " " + fname;
         std::string encode() const {
-            std::string key_buf(fname);
-            key_buf.append((char*)&offset, sizeof(offset));
-            return key_buf;
+            std::ostringstream os;
+            os << offset << " ";
+            os << size << " ";
+            os << verify_checksum << " ";
+            os << compression_type << " ";
+            os << fname.length() << " ";  
+            return os.str().append(fname);
+        }
+    private:
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive& ar, const unsigned int version) {
+            ar & fname;
+            ar & offset;
+            ar & size;
+            ar & verify_checksum;
+            ar & compression_type;
         }
     };
 
@@ -89,6 +133,7 @@ public:
         return _get_page_cache(page_type) != nullptr;
     }
 
+    void keys(std::vector<VectorSerialization<CacheKey>>& keys);
 private:
     StoragePageCache();
     static StoragePageCache* _s_instance;

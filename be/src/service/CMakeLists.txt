@@ -27,6 +27,7 @@ add_library(Service
     brpc_service.cpp
     http_service.cpp
     internal_service.cpp
+    cache_warmup_service.cpp
 )
 
 add_executable(palo_be

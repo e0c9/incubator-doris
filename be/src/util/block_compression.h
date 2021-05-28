@@ -32,7 +32,10 @@ namespace doris {
 // stream compression.
 class BlockCompressionCodec {
 public:
-    virtual ~BlockCompressionCodec() {}
+
+    BlockCompressionCodec(segment_v2::CompressionTypePB type = segment_v2::CompressionTypePB::NO_COMPRESSION) : _type(type) {}
+
+    virtual ~BlockCompressionCodec() { }
 
     // This function will compress input data into output.
     // output should be preallocated, and its capacity must be large enough
@@ -52,6 +55,11 @@ public:
 
     // Returns an upper bound on the max compressed length.
     virtual size_t max_compressed_len(size_t len) const = 0;
+
+    segment_v2::CompressionTypePB type() const {return _type;}
+
+private:
+    segment_v2::CompressionTypePB _type;
 };
 
 // Get a BlockCompressionCodec through type.

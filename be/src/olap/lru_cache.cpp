@@ -224,6 +224,23 @@ Cache::Handle* LRUCache::lookup(const CacheKey& key, uint32_t hash) {
     return reinterpret_cast<Cache::Handle*>(e);
 }
 
+void LRUCache::keys(std::vector<CacheKey>& keys) {
+    MutexLock l(&_mutex);
+    uint32_t limit = (uint32_t) (_table.elems() * config::dump_cache_limit_ratio);
+    keys.reserve(limit);
+    LRUHandle* cur = _lru.next;
+
+    uint32_t counter = 0;
+    while (cur != &_lru) {
+        if (counter <= limit && cur->in_cache) {
+            keys.push_back(cur->key());
+            counter++;
+        }
+        cur = cur->next;
+    }
+
+}
+
 void LRUCache::release(Cache::Handle* handle) {
     if (handle == nullptr) {
         return;
@@ -476,6 +493,13 @@ void ShardedLRUCache::prune() {
         num_prune += _shards[s].prune();
     }
     VLOG_DEBUG << "Successfully prune cache, clean " << num_prune << " entries.";
+}
+
+void ShardedLRUCache::keys(std::vector<std::vector<CacheKey>>& keys) {
+    keys.resize(kNumShards);
+    for (int shard = 0; shard < kNumShards; shard++) {
+        _shards[shard].keys(keys[shard]);
+    }
 }
 
 void ShardedLRUCache::update_cache_metrics() const {

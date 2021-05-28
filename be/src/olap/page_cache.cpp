@@ -66,4 +66,17 @@ void StoragePageCache::insert(const CacheKey& key, const Slice& data, PageCacheH
     *handle = PageCacheHandle(cache, lru_handle);
 }
 
-} // namespace doris
+void StoragePageCache::keys(std::vector<VectorSerialization<CacheKey>>& keys) {
+    std::vector<std::vector<doris::CacheKey>> lru_cache_keys;
+    _cache->keys(lru_cache_keys);
+
+    keys.resize(lru_cache_keys.size());
+    for (int i = 0; i < lru_cache_keys.size(); i++) {
+        keys[i].reserve(lru_cache_keys[i].size());
+        for (const auto& lru_cache_key : lru_cache_keys[i]) {
+            keys[i].emplace_back(CacheKey(std::string(lru_cache_key.data(), lru_cache_key.size())));
+        }
+    }
+}
+
+}

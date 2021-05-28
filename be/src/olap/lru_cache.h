@@ -51,6 +51,7 @@ class CacheKey;
 // Create a new cache with a specified name and a fixed size capacity.  This implementation
 // of Cache uses a least-recently-used eviction policy.
 extern Cache* new_lru_cache(const std::string& name, size_t capacity, std::shared_ptr<MemTracker> parent_tracekr = nullptr);
+const std::string kCacheKeyVersion = "v0.0.1";
 
 class CacheKey {
 public:
@@ -203,6 +204,8 @@ public:
     // leveldb may change prune() to a pure abstract method.
     virtual void prune() {}
 
+    virtual void keys(std::vector<std::vector<CacheKey>>& keys) = 0;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(Cache);
 };
@@ -264,6 +267,8 @@ public:
     // than the function above.
     void remove(const LRUHandle* h);
 
+    uint32_t elems() const { return _elems; }
+
 private:
     FRIEND_TEST(CacheTest, HandleTableTest);
 
@@ -301,6 +306,7 @@ public:
     void release(Cache::Handle* handle);
     void erase(const CacheKey& key, uint32_t hash);
     int prune();
+    void keys(std::vector<CacheKey>& keys);
 
     uint64_t get_lookup_count() const { return _lookup_count; }
     uint64_t get_hit_count() const { return _hit_count; }
@@ -353,6 +359,7 @@ public:
     Slice value_slice(Handle* handle) override;
     virtual uint64_t new_id();
     virtual void prune();
+    virtual void keys(std::vector<std::vector<CacheKey>>& keys);
 
 private:
     void update_cache_metrics() const;

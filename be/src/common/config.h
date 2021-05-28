@@ -614,6 +614,13 @@ CONF_Int16(mem_tracker_level, "0");
 // This config usually only needs to be modified during testing.
 // In most cases, it does not need to be modified.
 CONF_mDouble(tablet_version_graph_orphan_vertex_ratio, "0.1");
+
+CONF_mBool(enable_warmup, "false");
+//Limit ratio of dump cache
+CONF_Double(dump_cache_limit_ratio, "1.0");
+CONF_Double(warmup_cache_expiration_time_in_mins, "30");
+CONF_String(page_cache_dump_path, "${DORIS_HOME}/page_cache")
+CONF_mInt32(max_load_cache_thread_num_per_shard, "3")
 } // namespace config
 
 } // namespace doris

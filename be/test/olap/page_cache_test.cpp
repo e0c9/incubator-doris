@@ -18,6 +18,7 @@
 #include "olap/page_cache.h"
 
 #include <gtest/gtest.h>
+#include "common/stl_serialization.h"
 
 namespace doris {
 
@@ -31,8 +32,8 @@ public:
 TEST(StoragePageCacheTest, data_page_only) {
     StoragePageCache cache(kNumShards * 2048, 0);
 
-    StoragePageCache::CacheKey key("abc", 0);
-    StoragePageCache::CacheKey memory_key("mem", 0);
+    StoragePageCache::CacheKey key("abc", 0, 0);
+    StoragePageCache::CacheKey memory_key("mem", 0, 0);
 
     segment_v2::PageTypePB page_type = segment_v2::DATA_PAGE;
 
@@ -65,7 +66,7 @@ TEST(StoragePageCacheTest, data_page_only) {
 
     // put too many page to eliminate first page
     for (int i = 0; i < 10 * kNumShards; ++i) {
-        StoragePageCache::CacheKey key("bcd", i);
+        StoragePageCache::CacheKey key("bcd", i, 0);
         PageCacheHandle handle;
         Slice data(new char[1024], 1024);
         cache.insert(key, data, &handle, page_type, false);
@@ -74,8 +75,8 @@ TEST(StoragePageCacheTest, data_page_only) {
     // cache miss
     {
         PageCacheHandle handle;
-        StoragePageCache::CacheKey miss_key("abc", 1);
-        auto found = cache.lookup(miss_key, &handle, page_type);
+        StoragePageCache::CacheKey miss_key("abc", 1, 0);
+        auto found = cache.lookup(miss_key, &handle);
         ASSERT_FALSE(found);
     }
 
@@ -243,7 +244,28 @@ TEST(StoragePageCacheTest, mixed_pages) {
         ASSERT_FALSE(found_data);
         ASSERT_FALSE(found_index);
     }
+}
 
+TEST(StoragePageCacheTest, serialize) {
+    StoragePageCache::CacheKey key1("abc", 0, 1, segment_v2::CompressionTypePB::LZ4);
+    StoragePageCache::CacheKey key2("efg", 0, 2, segment_v2::CompressionTypePB::LZ4F);
+
+    ASSERT_EQ(StoragePageCache::CacheKey(key1.encode()).encode(), key1.encode());
+
+    VectorSerialization<StoragePageCache::CacheKey> ser_keys;
+    ser_keys.push_back(key1);
+    ser_keys.push_back(key2);
+
+    std::ofstream ofs("./test_serialization");
+    ser_keys.serialization(ofs);
+
+    VectorSerialization<StoragePageCache::CacheKey> unser_keys;
+    std::ifstream ifs("./test_serialization");
+    unser_keys.unserialization(ifs);
+
+    ASSERT_EQ(2, unser_keys.size());
+    ASSERT_EQ(unser_keys[0].encode(), key1.encode()); 
+    ASSERT_EQ(unser_keys[1].encode(), key2.encode()); 
 }
 
 } // namespace doris

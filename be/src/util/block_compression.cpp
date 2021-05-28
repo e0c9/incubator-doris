@@ -49,7 +49,10 @@ public:
         static Lz4BlockCompression s_instance;
         return &s_instance;
     }
-    ~Lz4BlockCompression() override {}
+
+    Lz4BlockCompression(segment_v2::CompressionTypePB type = segment_v2::CompressionTypePB::LZ4) : BlockCompressionCodec(type) {}
+
+    ~Lz4BlockCompression() override { }
 
     Status compress(const Slice& input, Slice* output) const override {
         auto compressed_len =
@@ -89,7 +92,9 @@ public:
         return &s_instance;
     }
 
-    ~Lz4fBlockCompression() override {}
+    Lz4fBlockCompression(segment_v2::CompressionTypePB type = segment_v2::CompressionTypePB::LZ4F) : BlockCompressionCodec(type) {}
+
+    ~Lz4fBlockCompression() override { }
 
     Status compress(const Slice& input, Slice* output) const override {
         auto compressed_len = LZ4F_compressFrame(output->data, output->size, input.data, input.size,
@@ -272,7 +277,10 @@ public:
         static SnappyBlockCompression s_instance;
         return &s_instance;
     }
-    ~SnappyBlockCompression() override {}
+
+    SnappyBlockCompression(segment_v2::CompressionTypePB type = segment_v2::CompressionTypePB::SNAPPY) : BlockCompressionCodec(type) {}
+
+    ~SnappyBlockCompression() override { }
 
     Status compress(const Slice& input, Slice* output) const override {
         snappy::RawCompress(input.data, input.size, output->data, &output->size);
@@ -306,7 +314,9 @@ public:
         static ZlibBlockCompression s_instance;
         return &s_instance;
     }
-    ~ZlibBlockCompression() {}
+
+    ZlibBlockCompression(segment_v2::CompressionTypePB type = segment_v2::CompressionTypePB::ZLIB) : BlockCompressionCodec(type) {}
+    ~ZlibBlockCompression() { }
 
     Status compress(const Slice& input, Slice* output) const override {
         auto zres = ::compress((Bytef*)output->data, &output->size, (Bytef*)input.data, input.size);
