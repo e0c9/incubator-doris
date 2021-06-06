@@ -228,10 +228,10 @@ void LRUCache::keys(std::vector<CacheKey>& keys) {
     MutexLock l(&_mutex);
     uint32_t limit = (uint32_t) (_table.elems() * config::dump_cache_limit_ratio);
     keys.reserve(limit);
-    LRUHandle* cur = _lru.next;
+    LRUHandle* cur = _lru_durable.next;
 
     uint32_t counter = 0;
-    while (cur != &_lru) {
+    while (cur != &_lru_durable) {
         if (counter <= limit && cur->in_cache) {
             keys.push_back(cur->key());
             counter++;
@@ -239,6 +239,14 @@ void LRUCache::keys(std::vector<CacheKey>& keys) {
         cur = cur->next;
     }
 
+    cur = _lru_normal.next;
+    while (cur != &_lru_normal) {
+        if (counter <= limit && cur->in_cache) {
+            keys.push_back(cur->key());
+            counter++;
+        }
+        cur = cur->next;
+    }
 }
 
 void LRUCache::release(Cache::Handle* handle) {

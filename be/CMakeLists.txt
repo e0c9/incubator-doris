@@ -133,9 +133,9 @@ set(BOOST_ROOT ${THIRDPARTY_DIR})
 set(Boost_NO_BOOST_CMAKE OFF)
 
 if (NOT APPLE)
-    find_package(Boost 1.55.0 REQUIRED COMPONENTS thread regex filesystem system date_time program_options serialization)
+    find_package(Boost 1.73.0 REQUIRED COMPONENTS regex system filesystem thread date_time program_options serialization)
 else()
-    find_package(Boost 1.55.0 COMPONENTS thread regex filesystem system date_time program_options serialization)
+    find_package(Boost 1.73.0 COMPONENTS thread regex system filesystem date_time program_options serialization)
 endif()
 
 set(GPERFTOOLS_HOME "${THIRDPARTY_DIR}/gperftools")
