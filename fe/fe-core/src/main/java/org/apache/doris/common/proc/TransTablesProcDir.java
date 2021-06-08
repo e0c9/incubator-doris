@@ -25,7 +25,6 @@ import org.apache.doris.transaction.GlobalTransactionMgr;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,19 +57,7 @@ public class TransTablesProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0);
         Collections.sort(tableInfos, comparator);
 
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        for (List<Comparable> info : tableInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, tableInfos);
     }
 
     @Override

@@ -99,10 +99,7 @@ public class CurrentQueryFragmentProcNode implements ProcNodeInterface {
                 return l1.get(0).compareTo(l2.get(0));
             }
         });
-        final BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES.asList());
-        result.setRows(sortedRowData);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, sortedRowData);
     }
 
 }

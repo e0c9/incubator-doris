@@ -65,18 +65,8 @@ public class RollupProcDir implements ProcDirInterface {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(materializedViewHandler);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
         List<List<Comparable>> rollupJobInfos = materializedViewHandler.getAlterJobInfosByDb(db);
-        for (List<Comparable> infoStr : rollupJobInfos) {
-            List<String> oneInfo = new ArrayList<String>(TITLE_NAMES.size());
-            for (Comparable element : infoStr) {
-                oneInfo.add(element.toString());
-            }
-            result.addRow(oneInfo);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, rollupJobInfos);
     }
 
     public ProcResult fetchResultByFilter(HashMap<String, Expr> filter, ArrayList<OrderByPair> orderByPairs,
@@ -129,16 +119,7 @@ public class RollupProcDir implements ProcDirInterface {
             jobInfos = jobInfos.subList(beginIndex,endIndex);
         }
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (List<Comparable> jobInfo : jobInfos) {
-            List<String> oneResult = new ArrayList<String>(jobInfos.size());
-            for (Comparable column : jobInfo) {
-                oneResult.add(column.toString());
-            }
-            result.addRow(oneResult);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, jobInfos);
     }
 
     boolean filterResult(String columnName, Comparable element, HashMap<String, Expr> filter) throws AnalysisException {

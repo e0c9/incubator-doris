@@ -22,7 +22,6 @@ import org.apache.doris.qe.QueryStatisticsItem;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -60,11 +59,6 @@ public class CurrentQuerySqlProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        final BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES.asList());
-        final List<String> values = Lists.newArrayList();
-        values.add(item.getSql());
-        result.addRow(values);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, List.of(List.of(item.getSql())));
     }
 }

@@ -63,12 +63,7 @@ public class ColocationGroupProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
         ColocateTableIndex index = Catalog.getCurrentColocateIndex();
-        List<List<String>> infos = index.getInfos();
-        result.setRows(infos);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES,index.getInfos());
     }
 }

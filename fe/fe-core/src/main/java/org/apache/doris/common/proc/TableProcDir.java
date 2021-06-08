@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.stream.Collectors;
 import org.apache.doris.catalog.Database;
 import org.apache.doris.catalog.EsTable;
 import org.apache.doris.catalog.OlapTable;
@@ -58,13 +59,9 @@ public class TableProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-
-        result.setNames(TITLE_NAMES);
-        for (String name : CHILDREN_NODES) {
-            result.addRow(Lists.newArrayList(name));
-        }
-        return result;
+        return BaseProcResult.createResult(
+            TITLE_NAMES,
+            CHILDREN_NODES.stream().map(Lists::newArrayList).collect(Collectors.toList()));
     }
 
     @Override

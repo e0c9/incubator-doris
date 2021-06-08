@@ -18,6 +18,7 @@
 package org.apache.doris.common.proc;
 
 import com.google.common.base.Preconditions;
+import java.util.stream.Collectors;
 import org.apache.doris.analysis.ShowRoutineLoadStmt;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.common.AnalysisException;
@@ -62,16 +63,12 @@ public class RoutineLoadsNameProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult baseProcResult = new BaseProcResult();
-        baseProcResult.setNames(ShowRoutineLoadStmt.getTitleNames());
-
         // find all of job named routine load
         RoutineLoadManager routineLoadManager = Catalog.getCurrentCatalog().getRoutineLoadManager();
-        List<RoutineLoadJob> routineLoadJobList = routineLoadManager.getJobByName(jobName);
-        for (RoutineLoadJob routineLoadJob : routineLoadJobList) {
-            baseProcResult.addRow(routineLoadJob.getShowInfo());
-        }
+        List<List<String>> rows = routineLoadManager.getJobByName(jobName)
+            .stream().map(RoutineLoadJob::getShowInfo).collect(Collectors.toList());
 
-        return baseProcResult;
+        return BaseProcResult.createResult(ShowRoutineLoadStmt.getTitleNames(), rows);
+
     }
 }

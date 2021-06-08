@@ -18,24 +18,18 @@
 package org.apache.doris.common.proc;
 
 import org.apache.doris.common.AnalysisException;
-
-import com.google.common.collect.Lists;
-
 import java.util.List;
 
 public class BaseProcNode implements ProcNodeInterface {
-    private ProcResult result;
+    private final ProcResult result;
 
     // 为只有一个值的构造函数
     public BaseProcNode(String val) {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(Lists.newArrayList("value"));
-        result.addRow(Lists.newArrayList(val));
-        this.result = result;
+        this.result = BaseProcResult.createResult(List.of("value"), List.of(List.of(val)));
     }
 
     public BaseProcNode(List<String> col, List<List<String>> val) {
-        this.result = new BaseProcResult(col, val);
+        this.result = BaseProcResult.createResult(col, val);
     }
 
     public BaseProcNode(ProcResult result) {

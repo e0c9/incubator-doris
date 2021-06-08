@@ -20,7 +20,7 @@ package org.apache.doris.common.proc;
 import org.apache.doris.common.AnalysisException;
 
 public interface ProcDirInterface extends ProcNodeInterface {
-    public boolean register(String name, ProcNodeInterface node);
+    boolean register(String name, ProcNodeInterface node);
 
-    public ProcNodeInterface lookup(String name) throws AnalysisException;
+    ProcNodeInterface lookup(String name) throws AnalysisException;
 }

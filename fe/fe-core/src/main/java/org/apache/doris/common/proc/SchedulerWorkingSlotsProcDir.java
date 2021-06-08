@@ -24,8 +24,6 @@ import org.apache.doris.system.Backend;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 public class SchedulerWorkingSlotsProcDir implements ProcDirInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
             .add("BeId").add("PathHash").add("AvailSlots").add("TotalSlots")
@@ -33,11 +31,8 @@ public class SchedulerWorkingSlotsProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        List<List<String>> infos = Catalog.getCurrentCatalog().getTabletScheduler().getSlotsInfo();
-        result.setRows(infos);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES,
+            Catalog.getCurrentCatalog().getTabletScheduler().getSlotsInfo());
     }
 
     @Override

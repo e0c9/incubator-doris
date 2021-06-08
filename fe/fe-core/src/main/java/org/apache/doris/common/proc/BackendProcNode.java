@@ -36,7 +36,7 @@ public class BackendProcNode implements ProcNodeInterface {
             .add("TotalCapacity").add("TotalUsedPct").add("State").add("PathHash")
             .build();
 
-    private Backend backend;
+    private final Backend backend;
 
     public BackendProcNode(Backend backend) {
         this.backend = backend;
@@ -46,19 +46,17 @@ public class BackendProcNode implements ProcNodeInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(backend);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         for (Map.Entry<String, DiskInfo> entry : backend.getDisks().entrySet()) {
             List<String> info = Lists.newArrayList();
             info.add(entry.getKey());
-            
+
             // data used
             long dataUsedB = entry.getValue().getDataUsedCapacityB();
             Pair<Double, String> dataUsedUnitPair = DebugUtil.getByteUint(dataUsedB);
             info.add(DebugUtil.DECIMAL_FORMAT_SCALE_3.format(dataUsedUnitPair.first) + " "
                     + dataUsedUnitPair.second);
-            
+
             // avail
             long availB = entry.getValue().getAvailableCapacityB();
             Pair<Double, String> availUnitPair = DebugUtil.getByteUint(availB);
@@ -85,10 +83,10 @@ public class BackendProcNode implements ProcNodeInterface {
             info.add(entry.getValue().getState().name());
             info.add(String.valueOf(entry.getValue().getPathHash()));
 
-            result.addRow(info);
+            rows.add(info);
         }
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
 }

@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.List;
 import org.apache.doris.alter.MaterializedViewHandler;
 import org.apache.doris.alter.SchemaChangeHandler;
 import org.apache.doris.catalog.Catalog;
@@ -86,9 +87,7 @@ public class JobsProcDir implements ProcDirInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(catalog);
 
-        BaseProcResult result = new BaseProcResult();
-
-        result.setNames(TITLE_NAMES);
+        List<List<String>> rows = Lists.newArrayList();
 
         long dbId = db.getId();
         // load
@@ -105,7 +104,7 @@ public class JobsProcDir implements ProcDirInterface {
         Long cancelledNum = load.getLoadJobNum(org.apache.doris.load.LoadJob.JobState.CANCELLED, dbId)
                 + loadManager.getLoadJobNum(org.apache.doris.load.loadv2.JobState.CANCELLED, dbId);
         Long totalNum = pendingNum + runningNum + finishedNum + cancelledNum;
-        result.addRow(Lists.newArrayList(LOAD, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
+        rows.add(Lists.newArrayList(LOAD, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
                                          cancelledNum.toString(), totalNum.toString()));
 
         // delete
@@ -115,7 +114,7 @@ public class JobsProcDir implements ProcDirInterface {
         finishedNum = 0L;
         cancelledNum = 0L;
         totalNum = pendingNum + runningNum + finishedNum + cancelledNum;
-        result.addRow(Lists.newArrayList(DELETE, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
+        rows.add(Lists.newArrayList(DELETE, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
                                          cancelledNum.toString(), totalNum.toString()));
 
         // rollup
@@ -126,7 +125,7 @@ public class JobsProcDir implements ProcDirInterface {
         finishedNum = materializedViewHandler.getAlterJobV2Num(org.apache.doris.alter.AlterJobV2.JobState.FINISHED, dbId);
         cancelledNum = materializedViewHandler.getAlterJobV2Num(org.apache.doris.alter.AlterJobV2.JobState.CANCELLED, dbId);
         totalNum = pendingNum + runningNum + finishedNum + cancelledNum;
-        result.addRow(Lists.newArrayList(ROLLUP, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
+        rows.add(Lists.newArrayList(ROLLUP, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
                                          cancelledNum.toString(), totalNum.toString()));
 
         // schema change
@@ -137,7 +136,7 @@ public class JobsProcDir implements ProcDirInterface {
         finishedNum = schemaChangeHandler.getAlterJobV2Num(org.apache.doris.alter.AlterJobV2.JobState.FINISHED, dbId);
         cancelledNum = schemaChangeHandler.getAlterJobV2Num(org.apache.doris.alter.AlterJobV2.JobState.CANCELLED, dbId);
         totalNum = pendingNum + runningNum + finishedNum + cancelledNum;
-        result.addRow(Lists.newArrayList(SCHEMA_CHANGE, pendingNum.toString(), runningNum.toString(),
+        rows.add(Lists.newArrayList(SCHEMA_CHANGE, pendingNum.toString(), runningNum.toString(),
                                          finishedNum.toString(), cancelledNum.toString(), totalNum.toString()));
 
         // export
@@ -147,9 +146,9 @@ public class JobsProcDir implements ProcDirInterface {
         finishedNum = exportMgr.getJobNum(ExportJob.JobState.FINISHED, dbId);
         cancelledNum = exportMgr.getJobNum(ExportJob.JobState.CANCELLED, dbId);
         totalNum = pendingNum + runningNum + finishedNum + cancelledNum;
-        result.addRow(Lists.newArrayList(EXPORT, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
+        rows.add(Lists.newArrayList(EXPORT, pendingNum.toString(), runningNum.toString(), finishedNum.toString(),
                 cancelledNum.toString(), totalNum.toString()));
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 }

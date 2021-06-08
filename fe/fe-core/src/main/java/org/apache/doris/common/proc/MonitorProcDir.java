@@ -21,7 +21,6 @@ import org.apache.doris.common.AnalysisException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -36,15 +35,7 @@ public class MonitorProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<String> jvmRow = Lists.newArrayList();
-        jvmRow.add("jvm");
-        jvmRow.add(" ");
-        result.addRow(jvmRow);
-
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, List.of(List.of("jvm", " ")));
     }
 
     @Override

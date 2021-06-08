@@ -23,9 +23,6 @@ import org.apache.doris.transaction.GlobalTransactionMgr;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TransPartitionProcNode implements ProcNodeInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
             .add("PartitionId")
@@ -46,18 +43,6 @@ public class TransPartitionProcNode implements ProcNodeInterface {
     @Override
     public ProcResult fetchResult() throws AnalysisException {
         GlobalTransactionMgr transactionMgr = Catalog.getCurrentGlobalTransactionMgr();
-        List<List<Comparable>> partitionInfos = transactionMgr.getPartitionTransInfo(dbId, tid, tableId);
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (List<Comparable> info : partitionInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, transactionMgr.getPartitionTransInfo(dbId, tid, tableId));
     }
 }

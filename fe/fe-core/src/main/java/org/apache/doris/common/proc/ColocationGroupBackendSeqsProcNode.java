@@ -40,17 +40,15 @@ public class ColocationGroupBackendSeqsProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        
+        List<List<String>> rows = Lists.newArrayList();
         int index = 0;
         for (List<Long> seqs : backendsSeq) {
             List<String> info = Lists.newArrayList();
             info.add(String.valueOf(index++));
             info.add(Joiner.on(", ").join(seqs));
-            result.addRow(info);
+            rows.add(info);
         }
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
 }

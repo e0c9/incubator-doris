@@ -87,8 +87,7 @@ public class CurrentQueryBackendInstanceProcDir implements ProcDirInterface {
             }
         });
 
-        final BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES.asList());
+        List<List<String>> rows = Lists.newArrayList();
         for (List<RowData> itemList : sortedRowData) {
             for (RowData item : itemList) {
                 final List<String> rowData = Lists.newArrayList();
@@ -96,11 +95,11 @@ public class CurrentQueryBackendInstanceProcDir implements ProcDirInterface {
                 rowData.add(String.valueOf(itemList.size()));
                 rowData.add(item.getInstanceId());
                 rowData.add(item.getExecTime());
-                result.addRow(rowData);
+                rows.add(rowData);
             }
 
         }
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
     private static class RowData {

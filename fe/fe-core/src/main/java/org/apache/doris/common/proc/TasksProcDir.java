@@ -56,9 +56,7 @@ public class TasksProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         int totalFailedNum = 0;
         int totalTaskNum = 0;
         for (TTaskType type : TTaskType.values()) {
@@ -69,7 +67,7 @@ public class TasksProcDir implements ProcDirInterface {
             row.add(String.valueOf(failedNum));
             row.add(String.valueOf(taskNum));
 
-            result.addRow(row);
+            rows.add(row);
 
             totalFailedNum += failedNum;
             totalTaskNum += taskNum;
@@ -79,8 +77,8 @@ public class TasksProcDir implements ProcDirInterface {
         sumRow.add("Total");
         sumRow.add(String.valueOf(totalFailedNum));
         sumRow.add(String.valueOf(totalTaskNum));
-        result.addRow(sumRow);
+        rows.add(sumRow);
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 }

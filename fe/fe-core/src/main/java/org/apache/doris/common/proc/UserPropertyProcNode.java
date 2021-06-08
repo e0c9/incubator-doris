@@ -30,8 +30,8 @@ public class UserPropertyProcNode implements ProcNodeInterface {
             .add("Key").add("Value")
             .build();
 
-    private PaloAuth auth;
-    private String qualifiedUser;
+    private final PaloAuth auth;
+    private final String qualifiedUser;
 
     public UserPropertyProcNode(PaloAuth auth, String qualifiedUser) {
         this.auth = auth;
@@ -40,10 +40,6 @@ public class UserPropertyProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        result.setRows(auth.getUserProperties(qualifiedUser));
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, auth.getUserProperties(qualifiedUser));
     }
 }

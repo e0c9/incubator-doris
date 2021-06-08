@@ -46,8 +46,8 @@ public class EsPartitionsProcDir implements ProcDirInterface {
 
     public static final int PARTITION_NAME_INDEX = 1;
 
-    private Database db;
-    private EsTable esTable;
+    private final Database db;
+    private final EsTable esTable;
 
     public EsPartitionsProcDir(Database db, EsTable esTable) {
         this.db = db;
@@ -100,18 +100,7 @@ public class EsPartitionsProcDir implements ProcDirInterface {
             esTable.readUnlock();
         }
 
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (List<Comparable> info : partitionInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, partitionInfos);
     }
 
     @Override

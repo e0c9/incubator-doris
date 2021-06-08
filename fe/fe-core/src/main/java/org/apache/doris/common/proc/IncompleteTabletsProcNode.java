@@ -47,11 +47,7 @@ public class IncompleteTabletsProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-
-        result.setNames(TITLE_NAMES);
-
-        List<String> row = new ArrayList<String>(1);
+        List<String> row = new ArrayList<>(1);
 
         String incompleteTablets = JOINER.join(Arrays.asList(unhealthyTabletIds));
         String inconsistentTablets = JOINER.join(Arrays.asList(inconsistentTabletIds));
@@ -60,9 +56,7 @@ public class IncompleteTabletsProcNode implements ProcNodeInterface {
         row.add(inconsistentTablets);
         row.add(cloningTablets);
 
-        result.addRow(row);
-
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, List.of(row));
     }
 
 }

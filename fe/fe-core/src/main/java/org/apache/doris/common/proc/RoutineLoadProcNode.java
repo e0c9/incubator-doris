@@ -47,9 +47,6 @@ public class RoutineLoadProcNode implements ProcNodeInterface {
             throw new AnalysisException("Job[" + jobId + "] does not exist");
         }
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(ShowRoutineLoadTaskStmt.getTitleNames());
-        result.setRows(routineLoadJob.getTasksShowInfo());
-        return result;
+        return BaseProcResult.createResult(ShowRoutineLoadTaskStmt.getTitleNames(), routineLoadJob.getTasksShowInfo());
     }
 }

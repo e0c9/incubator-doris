@@ -140,18 +140,6 @@ public class TablesProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0);
         Collections.sort(tableInfos, comparator);
 
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        for (List<Comparable> info : tableInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, tableInfos);
     }
 }

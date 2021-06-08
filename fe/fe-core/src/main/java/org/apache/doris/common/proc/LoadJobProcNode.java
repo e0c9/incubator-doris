@@ -42,21 +42,11 @@ public class LoadJobProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
         List<List<Comparable>> infos = load.getLoadJobUnfinishedInfo(jobId);
         // In this step, the detail of load job which is belongs to LoadManager will not be presented.
         // The reason is that there are no detail info in load job which is streaming during loading.
         // So it don't need to invoke the LoadManager here.
-        for (List<Comparable> info : infos) {
-            List<String> oneInfo = new ArrayList<String>(TITLE_NAMES.size());
-            for (Comparable element : info) {
-                oneInfo.add(element.toString());
-            }
-            result.addRow(oneInfo);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, infos);
     }
 
 }

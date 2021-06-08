@@ -24,8 +24,6 @@ import org.apache.doris.load.ExportMgr;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 // TODO(lingbin): think if need a sub node to show unfinished instances
 public class ExportProcNode implements ProcNodeInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
@@ -54,12 +52,8 @@ public class ExportProcNode implements ProcNodeInterface {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(exportMgr);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<List<String>> jobInfos = exportMgr.getExportJobInfosByIdOrState(db.getId(), 0, null, null, LIMIT);
-        result.setRows(jobInfos);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES,
+            exportMgr.getExportJobInfosByIdOrState(db.getId(), 0, null, null, LIMIT));
     }
 
     public static int analyzeColumn(String columnName) throws AnalysisException {

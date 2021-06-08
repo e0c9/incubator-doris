@@ -57,13 +57,10 @@ public class IndicesProcDir implements ProcDirInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(partition);
-
-        BaseProcResult result = new BaseProcResult();
         // get info
         List<List<Comparable>> indexInfos = new ArrayList<List<Comparable>>();
         olapTable.readLock();
         try {
-            result.setNames(TITLE_NAMES);
             for (MaterializedIndex materializedIndex : partition.getMaterializedIndices(IndexExtState.ALL)) {
                 List<Comparable> indexInfo = new ArrayList<Comparable>();
                 indexInfo.add(materializedIndex.getId());
@@ -82,15 +79,7 @@ public class IndicesProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0);
         Collections.sort(indexInfos, comparator);
 
-        // set result
-        for (List<Comparable> info : indexInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, indexInfos);
     }
 
     @Override
@@ -105,14 +94,14 @@ public class IndicesProcDir implements ProcDirInterface {
         if (Strings.isNullOrEmpty(indexIdStr)) {
             throw new AnalysisException("Index id is null");
         }
-        
+
         long indexId;
         try {
             indexId = Long.valueOf(indexIdStr);
         } catch (NumberFormatException e) {
             throw new AnalysisException("Invalid index id format: " + indexIdStr);
         }
-        
+
         olapTable.readLock();
         try {
             MaterializedIndex materializedIndex = partition.getIndex(indexId);

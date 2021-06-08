@@ -34,7 +34,7 @@ public class AuthProcDir implements ProcDirInterface {
             .add("UserIdentity").add("Password").add("GlobalPrivs").add("DatabasePrivs")
             .add("TablePrivs").add("ResourcePrivs").build();
 
-    private PaloAuth auth;
+    private final PaloAuth auth;
 
     public AuthProcDir(PaloAuth auth) {
         this.auth = auth;
@@ -61,10 +61,8 @@ public class AuthProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        result.setRows(Catalog.getCurrentCatalog().getAuth().getAuthInfo(null /* get all user */));
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES,
+            Catalog.getCurrentCatalog().getAuth().getAuthInfo(null /* get all user */));
     }
 }
 

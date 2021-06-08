@@ -73,13 +73,9 @@ public class StatisticProcDir implements ProcDirInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(catalog);
 
-        BaseProcResult result = new BaseProcResult();
-
-        result.setNames(TITLE_NAMES);
         List<Long> dbIds = catalog.getDbIds();
         if (dbIds == null || dbIds.isEmpty()) {
-            // empty
-            return result;
+            return BaseProcResult.empty(TITLE_NAMES);
         }
 
         SystemInfoService infoService = Catalog.getCurrentSystemInfo();
@@ -197,16 +193,7 @@ public class StatisticProcDir implements ProcDirInterface {
         finalLine.add(cloningTabletIds.size());
         lines.add(finalLine);
 
-        // add result
-        for (List<Comparable> line : lines) {
-            List<String> row = new ArrayList<String>(line.size());
-            for (Comparable comparable : line) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, lines);
     }
 
     @Override

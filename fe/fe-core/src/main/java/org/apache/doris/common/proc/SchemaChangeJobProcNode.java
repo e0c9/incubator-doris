@@ -23,8 +23,6 @@ import org.apache.doris.common.AnalysisException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 // Show unfinished schema change tasks of schema change job v2
 public class SchemaChangeJobProcNode implements ProcNodeInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
@@ -40,12 +38,6 @@ public class SchemaChangeJobProcNode implements ProcNodeInterface {
     @Override
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(job);
-
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<List<String>> unfinishedRollupTasks = job.getUnfinishedTasks(2000);
-        result.setRows(unfinishedRollupTasks);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, job.getUnfinishedTasks(2000));
     }
 }

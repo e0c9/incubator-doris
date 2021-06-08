@@ -43,19 +43,17 @@ public class TaskFailedProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         List<AgentTask> tasks = AgentTaskQueue.getFailedTask(backendId, type);
 
         for (AgentTask task : tasks) {
             List<String> row = Lists.newArrayList();
             row.add(String.valueOf(task.getSignature()));
             row.add(String.valueOf(task.getFailedTimes()));
-            result.addRow(row);
+            rows.add(row);
         }
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
 }

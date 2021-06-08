@@ -41,7 +41,7 @@ public class TabletSchedulerDetailProcDir implements ProcDirInterface {
             .add("FailedRunning").add("LstAdjPrio").add("VisibleVer").add("VisibleVerHash")
             .add("CmtVer").add("CmtVerHash").add("ErrMsg")
             .build();
-    
+
     private String type;
     private TabletScheduler tabletScheduler;
 
@@ -52,9 +52,6 @@ public class TabletSchedulerDetailProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        
         // get at most 1000 tablet infos
         List<List<String>> tabletInfos = Lists.newArrayList();
         if (type.equals(ClusterBalanceProcDir.PENDING_TABLETS)) {
@@ -66,8 +63,7 @@ public class TabletSchedulerDetailProcDir implements ProcDirInterface {
         } else {
             throw new AnalysisException("invalid type: " + type);
         }
-        result.setRows(tabletInfos);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, tabletInfos);
     }
 
     @Override

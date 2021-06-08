@@ -333,9 +333,8 @@ public class BrokerMgr {
     public class BrokerProcNode implements ProcNodeInterface {
         @Override
         public ProcResult fetchResult() {
-            BaseProcResult result = new BaseProcResult();
-            result.setNames(BROKER_PROC_NODE_TITLE_NAMES);
 
+            List<List<String>> rows = Lists.newArrayList();
             lock.lock();
             try {
                 for (Map.Entry<String, ArrayListMultimap<String, FsBroker>> entry : brokersMap.entrySet()) {
@@ -350,13 +349,13 @@ public class BrokerMgr {
                         row.add(TimeUtils.longToTimeString(broker.lastStartTime));
                         row.add(TimeUtils.longToTimeString(broker.lastUpdateTime));
                         row.add(broker.heartbeatErrMsg);
-                        result.addRow(row);
+                        rows.add(row);
                     }
                 }
             } finally {
                 lock.unlock();
             }
-            return result;
+            return BaseProcResult.createResult(BROKER_PROC_NODE_TITLE_NAMES, rows);
         }
     }
 

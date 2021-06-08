@@ -17,6 +17,8 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.doris.common.AnalysisException;
 
 import java.util.Map;
@@ -47,11 +49,9 @@ public class BaseProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(Lists.newArrayList("name"));
-        for (String name : nodeMap.keySet()) {
-            result.addRow(Lists.newArrayList(name));
-        }
-        return result;
+        List<List<String>> rows = nodeMap.keySet().stream().map(Lists::newArrayList).collect(
+            Collectors.toList());
+
+        return BaseProcResult.createResult(List.of("name"), rows);
     }
 }

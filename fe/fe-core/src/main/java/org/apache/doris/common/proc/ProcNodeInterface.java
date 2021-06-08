@@ -20,5 +20,5 @@ package org.apache.doris.common.proc;
 import org.apache.doris.common.AnalysisException;
 
 public interface ProcNodeInterface {
-    public ProcResult fetchResult() throws AnalysisException;
+    ProcResult fetchResult() throws AnalysisException;
 }

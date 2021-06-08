@@ -53,9 +53,7 @@ public class IndexSchemaProcNode implements ProcNodeInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(schema);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         for (Column column : schema) {
             // Extra string (aggregation and bloom filter)
             List<String> extras = Lists.newArrayList();
@@ -74,9 +72,9 @@ public class IndexSchemaProcNode implements ProcNodeInterface {
                                                  column.getDefaultValue() == null
                                                          ? FeConstants.null_string : column.getDefaultValue(),
                                                  extraStr);
-            result.addRow(rowList);
+            rows.add(rowList);
         }
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
 }

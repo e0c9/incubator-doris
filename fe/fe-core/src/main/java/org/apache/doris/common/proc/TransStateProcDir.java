@@ -37,11 +37,8 @@ public class TransStateProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
         GlobalTransactionMgr transactionMgr = Catalog.getCurrentGlobalTransactionMgr();
-        result.setRows(transactionMgr.getDbTransStateInfo(dbId));
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, transactionMgr.getDbTransStateInfo(dbId));
     }
 
     @Override
@@ -54,7 +51,7 @@ public class TransStateProcDir implements ProcDirInterface {
         if (Strings.isNullOrEmpty(state)) {
             throw new AnalysisException("State is not set");
         }
-        
+
         if (!state.equals("running") && !state.equals("finished")) {
             throw new AnalysisException("State is invalid");
         }

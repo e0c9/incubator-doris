@@ -181,22 +181,7 @@ public class PartitionsProcDir implements ProcDirInterface {
             filterPartitionInfos = filterPartitionInfos.subList(beginIndex,endIndex);
         }
 
-        return getBasicProcResult(filterPartitionInfos);
-    }
-
-    public BaseProcResult getBasicProcResult(List<List<Comparable>> partitionInfos) {
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (List<Comparable> info : partitionInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, filterPartitionInfos);
     }
 
     private List<List<Comparable>> getPartitionInfos() {
@@ -293,8 +278,7 @@ public class PartitionsProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        List<List<Comparable>> partitionInfos = getPartitionInfos();
-        return getBasicProcResult(partitionInfos);
+        return BaseProcResult.processResult(TITLE_NAMES, getPartitionInfos());
     }
 
     @Override

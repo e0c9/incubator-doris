@@ -35,13 +35,11 @@ public class SchedulerStatProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
         if (stat == null) {
-            return result;
+            return BaseProcResult.empty(TITLE_NAMES);
         }
-        result.setRows(stat.getBrief());
-        return result;
+
+        return BaseProcResult.createResult(TITLE_NAMES, stat.getBrief());
     }
 
 }

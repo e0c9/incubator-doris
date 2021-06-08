@@ -71,22 +71,18 @@ public class JobsDbProcDir implements ProcDirInterface {
     @Override
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(catalog);
-
-        BaseProcResult result = new BaseProcResult();
-
-        result.setNames(TITLE_NAMES);
         List<String> names = catalog.getDbNames();
         if (names == null || names.isEmpty()) {
-            // empty
-            return result;
+            return BaseProcResult.empty(TITLE_NAMES);
         }
 
+        List<List<String>> rows = Lists.newArrayList();
         for (String name : names) {
             Database db = catalog.getDb(name);
-            result.addRow(Lists.newArrayList(String.valueOf(db.getId()), name));
+            rows.add(Lists.newArrayList(String.valueOf(db.getId()), name));
         }
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
 }

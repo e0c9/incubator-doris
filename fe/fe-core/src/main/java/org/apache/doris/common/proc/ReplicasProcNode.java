@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import com.google.common.collect.Lists;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.catalog.Replica;
 import org.apache.doris.common.util.TimeUtils;
@@ -40,7 +41,7 @@ public class ReplicasProcNode implements ProcNodeInterface {
             .add("LstFailedTime").add("SchemaHash").add("DataSize").add("RowCount").add("State")
             .add("IsBad").add("VersionCount").add("PathHash").add("MetaUrl").add("CompactionStatus")
             .build();
-    
+
     private long tabletId;
     private List<Replica> replicas;
 
@@ -53,8 +54,7 @@ public class ReplicasProcNode implements ProcNodeInterface {
     public ProcResult fetchResult() {
         ImmutableMap<Long, Backend> backendMap = Catalog.getCurrentSystemInfo().getIdToBackend();
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
+        List<List<String>> rows = Lists.newArrayList();
         for (Replica replica : replicas) {
             Backend be = backendMap.get(replica.getBackendId());
             String host = (be == null ? "0.0.0.0" : be.getHost());
@@ -70,7 +70,7 @@ public class ReplicasProcNode implements ProcNodeInterface {
                     tabletId,
                     replica.getSchemaHash());
 
-            result.addRow(Arrays.asList(String.valueOf(replica.getId()),
+            rows.add(Arrays.asList(String.valueOf(replica.getId()),
                                         String.valueOf(replica.getBackendId()),
                                         String.valueOf(replica.getVersion()),
                                         String.valueOf(replica.getVersionHash()),
@@ -89,7 +89,7 @@ public class ReplicasProcNode implements ProcNodeInterface {
                                         metaUrl,
                                         compactionUrl));
         }
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 }
 

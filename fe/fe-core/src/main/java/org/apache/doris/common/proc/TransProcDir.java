@@ -24,8 +24,6 @@ import org.apache.doris.transaction.GlobalTransactionMgr;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 public class TransProcDir implements ProcDirInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
             .add("TransactionId")
@@ -56,12 +54,8 @@ public class TransProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
         GlobalTransactionMgr transactionMgr = Catalog.getCurrentGlobalTransactionMgr();
-        List<List<String>> infos = transactionMgr.getDbTransInfo(dbId, state.equals("running"), MAX_SHOW_ENTRIES);
-        result.setRows(infos);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, transactionMgr.getDbTransInfo(dbId, state.equals("running"), MAX_SHOW_ENTRIES));
     }
 
     @Override

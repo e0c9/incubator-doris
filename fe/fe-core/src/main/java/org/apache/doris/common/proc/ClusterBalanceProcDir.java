@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.List;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.clone.TabletChecker;
 import org.apache.doris.clone.TabletScheduler;
@@ -64,20 +65,18 @@ public class ClusterBalanceProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         TabletScheduler tabletScheduler = Catalog.getCurrentCatalog().getTabletScheduler();
         TabletChecker tabletChecker = Catalog.getCurrentCatalog().getTabletChecker();
-        result.addRow(Lists.newArrayList(CLUSTER_LOAD, String.valueOf(tabletScheduler.getStatisticMap().size())));
-        result.addRow(Lists.newArrayList(WORKING_SLOTS,
+        rows.add(Lists.newArrayList(CLUSTER_LOAD, String.valueOf(tabletScheduler.getStatisticMap().size())));
+        rows.add(Lists.newArrayList(WORKING_SLOTS,
                                          String.valueOf(tabletScheduler.getBackendsWorkingSlots().size())));
-        result.addRow(Lists.newArrayList(SCHED_STAT, tabletScheduler.getStat().getLastSnapshot() == null ? "0" : "1"));
+        rows.add(Lists.newArrayList(SCHED_STAT, tabletScheduler.getStat().getLastSnapshot() == null ? "0" : "1"));
 
-        result.addRow(Lists.newArrayList(PRIORITY_REPAIR, String.valueOf(tabletChecker.getPrioPartitionNum())));
-        result.addRow(Lists.newArrayList(PENDING_TABLETS, String.valueOf(tabletScheduler.getPendingNum())));
-        result.addRow(Lists.newArrayList(RUNNING_TABLETS, String.valueOf(tabletScheduler.getRunningNum())));
-        result.addRow(Lists.newArrayList(HISTORY_TABLETS, String.valueOf(tabletScheduler.getHistoryNum())));
-        return result;
+        rows.add(Lists.newArrayList(PRIORITY_REPAIR, String.valueOf(tabletChecker.getPrioPartitionNum())));
+        rows.add(Lists.newArrayList(PENDING_TABLETS, String.valueOf(tabletScheduler.getPendingNum())));
+        rows.add(Lists.newArrayList(RUNNING_TABLETS, String.valueOf(tabletScheduler.getRunningNum())));
+        rows.add(Lists.newArrayList(HISTORY_TABLETS, String.valueOf(tabletScheduler.getHistoryNum())));
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 }

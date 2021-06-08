@@ -43,7 +43,7 @@ public class DbsProcDir implements ProcDirInterface {
             .add("LastConsistencyCheckTime").add("ReplicaQuota")
             .build();
 
-    private Catalog catalog;
+    private final Catalog catalog;
 
     public DbsProcDir(Catalog catalog) {
         this.catalog = catalog;
@@ -79,13 +79,10 @@ public class DbsProcDir implements ProcDirInterface {
     @Override
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(catalog);
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
 
         List<String> dbNames = catalog.getDbNames();
         if (dbNames == null || dbNames.isEmpty()) {
-            // empty
-            return result;
+            return BaseProcResult.empty(TITLE_NAMES);
         }
 
         // get info
@@ -124,14 +121,6 @@ public class DbsProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0);
         Collections.sort(dbInfos, comparator);
 
-        // set result
-        for (List<Comparable> info : dbInfos) {
-            List<String> row = new ArrayList<String>(info.size());
-            for (Comparable comparable : info) {
-                row.add(comparable.toString());
-            }
-            result.addRow(row);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, dbInfos);
     }
 }

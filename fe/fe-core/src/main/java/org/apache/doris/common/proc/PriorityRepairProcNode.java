@@ -34,12 +34,7 @@ public class PriorityRepairProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
         TabletChecker tabletChecker = Catalog.getCurrentCatalog().getTabletChecker();
-        result.setRows(tabletChecker.getPriosInfo());
-
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, tabletChecker.getPriosInfo());
     }
 }

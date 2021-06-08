@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.List;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.load.LoadErrorHub;
 
@@ -35,14 +36,12 @@ public class LoadErrorHubProcNode implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
         LoadErrorHub.Param param = catalog.getLoadInstance().getLoadErrorHubInfo();
-        if (param != null) {
-            result.addRow(param.getInfo());
+        if (param == null) {
+            return BaseProcResult.empty(TITLE_NAMES);
         }
 
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, List.of(param.getInfo()));
     }
 }
 

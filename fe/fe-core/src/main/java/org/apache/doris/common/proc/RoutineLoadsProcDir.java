@@ -19,6 +19,7 @@ package org.apache.doris.common.proc;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.common.AnalysisException;
 import org.apache.doris.common.MetaNotFoundException;
@@ -60,17 +61,17 @@ public class RoutineLoadsProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult baseProcResult = new BaseProcResult();
-        baseProcResult.setNames(TITLE_NAMES);
+        List<List<String>> rows = Lists.newArrayList();
         RoutineLoadManager routineLoadManager = Catalog.getCurrentCatalog().getRoutineLoadManager();
         try {
             List<RoutineLoadJob> routineLoadJobList = routineLoadManager.getJob(null, null, true);
             for (RoutineLoadJob routineLoadJob : routineLoadJobList) {
-                baseProcResult.addRow(routineLoadJob.getShowStatistic());
+                rows.add(routineLoadJob.getShowStatistic());
             }
         } catch (MetaNotFoundException e) {
             throw new AnalysisException("failed to get all of routine load job");
         }
-        return baseProcResult;
+
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 }

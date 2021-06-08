@@ -17,6 +17,9 @@
 
 package org.apache.doris.common.proc;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.doris.common.AnalysisException;
 import org.apache.doris.thrift.TStorageMedium;
 
@@ -29,12 +32,9 @@ public class ClusterLoadStatByMedium implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (TStorageMedium medium : TStorageMedium.values()) {
-            result.addRow(Lists.newArrayList(medium.name()));
-        }
-        return result;
+        List<List<String>> rows = Arrays.stream(TStorageMedium.values()).map(TStorageMedium::name).map(Lists::newArrayList).collect(
+            Collectors.toList());
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
     @Override

@@ -57,7 +57,7 @@ public class BackendsProcDir implements ProcDirInterface {
 
     public static final int HOSTNAME_INDEX = 3;
 
-    private SystemInfoService clusterInfoService;
+    private final SystemInfoService clusterInfoService;
 
     public BackendsProcDir(SystemInfoService clusterInfoService) {
         this.clusterInfoService = clusterInfoService;
@@ -67,23 +67,14 @@ public class BackendsProcDir implements ProcDirInterface {
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(clusterInfoService);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        final List<List<String>> backendInfos = getClusterBackendInfos(null);
-        for (List<String> backendInfo : backendInfos) {
-            List<String> oneInfo = new ArrayList<>(backendInfo.size());
-            oneInfo.addAll(backendInfo);
-            result.addRow(oneInfo);
-        }
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, getClusterBackendInfos(null));
     }
-   
+
     /**
      * get backends of cluster
      * @param clusterName
      * @return
-     */ 
+     */
     public static List<List<String>> getClusterBackendInfos(String clusterName) {
         final SystemInfoService clusterInfoService = Catalog.getCurrentSystemInfo();
         List<List<String>> backendInfos = new LinkedList<>();
@@ -175,7 +166,7 @@ public class BackendsProcDir implements ProcDirInterface {
         // backends proc node get result too slow, add log to observer.
         LOG.info("backends proc get tablet num cost: {}, total cost: {}",
                  watch.elapsed(TimeUnit.MILLISECONDS), (System.currentTimeMillis() - start));
-         
+
         // sort by cluster name, host name
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(1, 3);
         comparableBackendInfos.sort(comparator);
@@ -187,7 +178,7 @@ public class BackendsProcDir implements ProcDirInterface {
             }
             backendInfos.add(oneInfo);
         }
-        
+
         return backendInfos;
     }
 

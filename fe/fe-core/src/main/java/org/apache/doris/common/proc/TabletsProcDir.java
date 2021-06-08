@@ -159,19 +159,7 @@ public class TabletsProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0, 1);
         Collections.sort(tabletInfos, comparator);
 
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        for (int i = 0; i < tabletInfos.size(); i++) {
-            List<Comparable> info = tabletInfos.get(i);
-            List<String> row = new ArrayList<String>(info.size());
-            for (int j = 0; j < info.size(); j++) {
-                row.add(info.get(j).toString());
-            }
-            result.addRow(row);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, tabletInfos);
     }
 
     @Override

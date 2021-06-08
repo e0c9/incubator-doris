@@ -23,8 +23,6 @@ import org.apache.doris.common.AnalysisException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import java.util.List;
-
 // Show unfinished rollup tasks of rollup job v2
 public class RollupJobProcNode implements ProcNodeInterface {
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
@@ -40,12 +38,6 @@ public class RollupJobProcNode implements ProcNodeInterface {
     @Override
     public ProcResult fetchResult() throws AnalysisException {
         Preconditions.checkNotNull(rollupJob);
-
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<List<String>> unfinishedRollupTasks = rollupJob.getUnfinishedTasks(2000);
-        result.setRows(unfinishedRollupTasks);
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rollupJob.getUnfinishedTasks(2000));
     }
 }

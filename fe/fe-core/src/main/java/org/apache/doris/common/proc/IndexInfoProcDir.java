@@ -56,8 +56,7 @@ public class IndexInfoProcDir implements ProcDirInterface {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(table);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
+        List<List<String>> rows = Lists.newArrayList();
         table.readLock();
         try {
             if (table.getType() == TableType.OLAP) {
@@ -83,7 +82,7 @@ public class IndexInfoProcDir implements ProcDirInterface {
                     }
                     builder.append(Joiner.on(", ").join(columnNames)).append(")");
 
-                    result.addRow(Lists.newArrayList(String.valueOf(indexId),
+                    rows.add(Lists.newArrayList(String.valueOf(indexId),
                             olapTable.getIndexNameById(indexId),
                             String.valueOf(indexMeta.getSchemaVersion()),
                             String.valueOf(indexMeta.getSchemaHash()),
@@ -92,10 +91,10 @@ public class IndexInfoProcDir implements ProcDirInterface {
                             builder.toString()));
                 }
             } else {
-                result.addRow(Lists.newArrayList("-1", table.getName(), "", "", "", "", ""));
+                rows.add(Lists.newArrayList("-1", table.getName(), "", "", "", "", ""));
             }
 
-            return result;
+            return BaseProcResult.createResult(TITLE_NAMES, rows);
         } finally {
             table.readUnlock();
         }
@@ -110,7 +109,7 @@ public class IndexInfoProcDir implements ProcDirInterface {
     public ProcNodeInterface lookup(String idxIdStr) throws AnalysisException {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(table);
-        
+
         long idxId;
         try {
             idxId = Long.valueOf(idxIdStr);

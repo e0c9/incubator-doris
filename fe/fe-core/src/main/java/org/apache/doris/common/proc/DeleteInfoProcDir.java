@@ -23,9 +23,6 @@ import org.apache.doris.load.Load;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class DeleteInfoProcDir implements ProcNodeInterface {
 
     public static final ImmutableList<String> TITLE_NAMES = new ImmutableList.Builder<String>()
@@ -33,9 +30,9 @@ public class DeleteInfoProcDir implements ProcNodeInterface {
             .add("State")
             .build();
 
-    private Load load;
-    private DeleteHandler deleteHandler;
-    private long dbId;
+    private final Load load;
+    private final DeleteHandler deleteHandler;
+    private final long dbId;
 
     public DeleteInfoProcDir(DeleteHandler deleteHandler, Load load, long dbId) {
         this.load = load;
@@ -45,17 +42,6 @@ public class DeleteInfoProcDir implements ProcNodeInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<List<Comparable>> infos = deleteHandler.getDeleteInfosByDb(dbId);
-        for (List<Comparable> info : infos) {
-            List<String> oneInfo = new ArrayList<String>(TITLE_NAMES.size());
-            for (Comparable element : info) {
-                oneInfo.add(element.toString());
-            }
-            result.addRow(oneInfo);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, deleteHandler.getDeleteInfosByDb(dbId));
     }
 }

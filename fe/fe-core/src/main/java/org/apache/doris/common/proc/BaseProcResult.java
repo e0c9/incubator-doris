@@ -17,34 +17,41 @@
 
 package org.apache.doris.common.proc;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class BaseProcResult implements ProcResult {
-    protected List<String> names;
-    protected List<List<String>> rows;
+    private final List<String> names;
+    private final List<List<String>> rows;
 
-    public BaseProcResult() {
-        names = Lists.newArrayList();
-        rows = Lists.newArrayList();
+    public static BaseProcResult empty(List<String> names) {
+        return new BaseProcResult(names);
     }
 
-    public BaseProcResult(List<String> col, List<List<String>> val) {
-        this.names = col;
-        this.rows = val;
+    public static <T> BaseProcResult processResult(List<String> names, List<List<T>> rows) {
+        List<List<String>> res = Lists.newArrayList();
+        for (List<T> row : rows) {
+            res.add(row.stream().map(Objects::toString).collect(Collectors.toList()));
+        }
+        return new BaseProcResult(names, res);
     }
 
-    public void setNames(List<String> names) {
-        this.names = names;
+    public static BaseProcResult createResult(List<String> names, List<List<String>> rows) {
+        return new BaseProcResult(names, rows);
     }
 
-    public void addRow(List<String> row) {
-        rows.add(row);
+    private BaseProcResult(List<String> names) {
+        this(names, Lists.newArrayList());
     }
 
-    public void setRows(List<List<String>> rows) {
-        this.rows = rows;
+    private BaseProcResult(List<String> names, List<List<String>> rows) {
+        this.names = requireNonNull(names, "column names is null");
+        this.rows = requireNonNull(rows, "rows is null");
     }
 
     @Override

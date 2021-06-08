@@ -38,13 +38,13 @@ public class EsShardProcDir implements ProcDirInterface {
     private Database db;
     private EsTable esTable;
     private String indexName;
-    
+
     public EsShardProcDir(Database db, EsTable esTable, String indexName) {
         this.db = db;
         this.esTable = esTable;
         this.indexName = indexName;
     }
-    
+
     @Override
     public ProcResult fetchResult() {
         Preconditions.checkNotNull(db);
@@ -82,19 +82,7 @@ public class EsShardProcDir implements ProcDirInterface {
         ListComparator<List<Comparable>> comparator = new ListComparator<List<Comparable>>(0, 1);
         Collections.sort(shardInfos, comparator);
 
-        // set result
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        for (int i = 0; i < shardInfos.size(); i++) {
-            List<Comparable> info = shardInfos.get(i);
-            List<String> row = new ArrayList<String>(info.size());
-            for (int j = 0; j < info.size(); j++) {
-                row.add(info.get(j).toString());
-            }
-            result.addRow(row);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, shardInfos);
     }
 
     @Override

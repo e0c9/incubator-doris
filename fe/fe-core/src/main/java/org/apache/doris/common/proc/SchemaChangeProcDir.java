@@ -109,7 +109,7 @@ public class SchemaChangeProcDir implements ProcDirInterface {
         if (filter == null || filter.size() == 0){
             jobInfos = schemaChangeJobInfos;
         } else {
-            jobInfos = Lists.newArrayList();        
+            jobInfos = Lists.newArrayList();
             for (List<Comparable> infoStr : schemaChangeJobInfos) {
                 if (infoStr.size() != TITLE_NAMES.size()) {
                     LOG.warn("SchemaChangeJobInfos.size() " + schemaChangeJobInfos.size()
@@ -147,16 +147,7 @@ public class SchemaChangeProcDir implements ProcDirInterface {
             jobInfos = jobInfos.subList(beginIndex,endIndex);
         }
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-        for (List<Comparable> jobInfo : jobInfos) {
-            List<String> oneResult = new ArrayList<String>(jobInfos.size());
-            for (Comparable column : jobInfo) {
-                oneResult.add(column.toString());
-            }
-            result.addRow(oneResult);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, jobInfos);
     }
 
     @Override
@@ -164,18 +155,7 @@ public class SchemaChangeProcDir implements ProcDirInterface {
         Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(schemaChangeHandler);
 
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
-        List<List<Comparable>> schemaChangeJobInfos = schemaChangeHandler.getAlterJobInfosByDb(db);
-        for (List<Comparable> infoStr : schemaChangeJobInfos) {
-            List<String> oneInfo = new ArrayList<String>(TITLE_NAMES.size());
-            for (Comparable element : infoStr) {
-                oneInfo.add(element.toString());
-            }
-            result.addRow(oneInfo);
-        }
-        return result;
+        return BaseProcResult.processResult(TITLE_NAMES, schemaChangeHandler.getAlterJobInfosByDb(db));
     }
 
     public static int analyzeColumn(String columnName) throws AnalysisException {

@@ -17,6 +17,7 @@
 
 package org.apache.doris.common.proc;
 
+import com.google.common.collect.Lists;
 import org.apache.doris.catalog.Catalog;
 import org.apache.doris.clone.ClusterLoadStatistic;
 import org.apache.doris.common.AnalysisException;
@@ -45,17 +46,14 @@ public class ClusterLoadStatisticProcDir implements ProcDirInterface {
 
     @Override
     public ProcResult fetchResult() throws AnalysisException {
-        BaseProcResult result = new BaseProcResult();
-        result.setNames(TITLE_NAMES);
-
+        List<List<String>> rows = Lists.newArrayList();
         statMap = Catalog.getCurrentCatalog().getTabletScheduler().getStatisticMap();
 
         statMap.values().forEach(t -> {
             List<List<String>> statistics = t.getClusterStatistic(medium);
-            statistics.forEach(result::addRow);
+            rows.addAll(statistics);
         });
-
-        return result;
+        return BaseProcResult.createResult(TITLE_NAMES, rows);
     }
 
     @Override
